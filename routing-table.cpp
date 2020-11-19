@@ -15,102 +15,112 @@
  */
 
 #include "routing-table.hpp"
-#include "core/utils.hpp"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "core/utils.hpp"
+
 namespace simple_router {
+
+int numberOfSetBits(uint32_t i) {
+    i = i - ((i >> 1) & 0x55555555);
+    i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+    return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 // IMPLEMENT THIS METHOD
 RoutingTableEntry
-RoutingTable::lookup(uint32_t ip) const
-{
-
-  // FILL THIS IN
-
-  throw std::runtime_error("Routing entry not found");
+RoutingTable::lookup(uint32_t ip) const {
+    // FILL THIS IN
+    for (auto e : m_entries) {
+        if ((e.dest & e.mask) == (ip & e.mask)) {
+            int len = numberOfSetBits(e.mask);
+            if (match_len < len) {
+                match_len = len;
+                res = e;
+            }
+        }
+    }
+    if (match_len >= 0) {
+        return res;
+    }
+    throw std::runtime_error("Routing entry not found");
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
 // You should not need to touch the rest of this code.
 
-bool
-RoutingTable::load(const std::string& file)
-{
-  FILE* fp;
-  char  line[BUFSIZ];
-  char  dest[32];
-  char  gw[32];
-  char  mask[32];
-  char  iface[32];
-  struct in_addr dest_addr;
-  struct in_addr gw_addr;
-  struct in_addr mask_addr;
+bool RoutingTable::load(const std::string& file) {
+    FILE* fp;
+    char line[BUFSIZ];
+    char dest[32];
+    char gw[32];
+    char mask[32];
+    char iface[32];
+    struct in_addr dest_addr;
+    struct in_addr gw_addr;
+    struct in_addr mask_addr;
 
-  if (access(file.c_str(), R_OK) != 0) {
-    perror("access");
-    return false;
-  }
-
-  fp = fopen(file.c_str(), "r");
-
-  while (fgets(line, BUFSIZ, fp) != 0) {
-    sscanf(line,"%s %s %s %s", dest, gw, mask, iface);
-    if (inet_aton(dest, &dest_addr) == 0) {
-      fprintf(stderr,
-              "Error loading routing table, cannot convert %s to valid IP\n",
-              dest);
-      return false;
-    }
-    if (inet_aton(gw, &gw_addr) == 0) {
-      fprintf(stderr,
-              "Error loading routing table, cannot convert %s to valid IP\n",
-              gw);
-      return false;
-    }
-    if (inet_aton(mask, &mask_addr) == 0) {
-      fprintf(stderr,
-              "Error loading routing table, cannot convert %s to valid IP\n",
-              mask);
-      return false;
+    if (access(file.c_str(), R_OK) != 0) {
+        perror("access");
+        return false;
     }
 
-    addEntry({dest_addr.s_addr, gw_addr.s_addr, mask_addr.s_addr, iface});
-  }
-  return true;
+    fp = fopen(file.c_str(), "r");
+
+    while (fgets(line, BUFSIZ, fp) != 0) {
+        sscanf(line, "%s %s %s %s", dest, gw, mask, iface);
+        if (inet_aton(dest, &dest_addr) == 0) {
+            fprintf(stderr,
+                    "Error loading routing table, cannot convert %s to valid IP\n",
+                    dest);
+            return false;
+        }
+        if (inet_aton(gw, &gw_addr) == 0) {
+            fprintf(stderr,
+                    "Error loading routing table, cannot convert %s to valid IP\n",
+                    gw);
+            return false;
+        }
+        if (inet_aton(mask, &mask_addr) == 0) {
+            fprintf(stderr,
+                    "Error loading routing table, cannot convert %s to valid IP\n",
+                    mask);
+            return false;
+        }
+
+        addEntry({dest_addr.s_addr, gw_addr.s_addr, mask_addr.s_addr, iface});
+    }
+    return true;
 }
 
-void
-RoutingTable::addEntry(RoutingTableEntry entry)
-{
-  m_entries.push_back(std::move(entry));
+void RoutingTable::addEntry(RoutingTableEntry entry) {
+    m_entries.push_back(std::move(entry));
 }
 
 std::ostream&
-operator<<(std::ostream& os, const RoutingTableEntry& entry)
-{
-  os << ipToString(entry.dest) << "\t\t"
-     << ipToString(entry.gw) << "\t"
-     << ipToString(entry.mask) << "\t"
-     << entry.ifName;
-  return os;
+operator<<(std::ostream& os, const RoutingTableEntry& entry) {
+    os << ipToString(entry.dest) << "\t\t"
+       << ipToString(entry.gw) << "\t"
+       << ipToString(entry.mask) << "\t"
+       << entry.ifName;
+    return os;
 }
 
 std::ostream&
-operator<<(std::ostream& os, const RoutingTable& table)
-{
-  os << "Destination\tGateway\t\tMask\tIface\n";
-  for (const auto& entry : table.m_entries) {
-    os << entry << "\n";
-  }
-  return os;
+operator<<(std::ostream& os, const RoutingTable& table) {
+    os << "Destination\tGateway\t\tMask\tIface\n";
+    for (const auto& entry : table.m_entries) {
+        os << entry << "\n";
+    }
+    return os;
 }
 
-} // namespace simple_router
+}  // namespace simple_router
