@@ -36,7 +36,9 @@ namespace simple_router {
 
 uint16_t cksum(const void* data, int len);
 uint16_t ethertype(const uint8_t* buf);
+uint16_t ethertype(const ethernet_hdr* ehdr);
 uint8_t ip_protocol(const uint8_t* buf);
+bool is_broadcast(const uint8_t* buf);
 
 /**
  * Get formatted Ethernet address, e.g. 00:11:22:33:44:55
@@ -60,6 +62,6 @@ void print_hdrs(const uint8_t* buf, uint32_t length);
 
 void print_hdrs(const Buffer& buffer);
 
-} // namespace simple_router
+}  // namespace simple_router
 
-#endif // SIMPLE_ROUTER_CORE_UTILS_HPP
+#endif  // SIMPLE_ROUTER_CORE_UTILS_HPP

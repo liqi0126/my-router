@@ -169,6 +169,9 @@ class ArpCache {
     void
     removeRequest(const std::shared_ptr<ArpRequest>& entry);
 
+    void
+    removeEntry(const std::shared_ptr<ArpEntry>& entry);
+
     /**
    * This method performs two functions:
    *
@@ -176,8 +179,7 @@ class ArpCache {
    *    to the ArpRequest with this IP. Otherwise, returns nullptr.
    * 2) Inserts this IP to MAC mapping in the cache, and marks it valid.
    */
-    std::shared_ptr<ArpRequest>
-    insertArpEntry(const Buffer& mac, uint32_t ip);
+    std::shared_ptr<ArpRequest> insertArpEntry(const Buffer& mac, uint32_t ip);
 
     /**
    * Prints out the ARP table.

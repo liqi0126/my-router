@@ -37,16 +37,18 @@ class SimpleRouter {
    * interface \p inIface are passed in as parameters. The packet is
    * complete with ethernet headers.
    */
-    void
-    handlePacket(const Buffer& packet, const std::string& inIface);
+    void handlePacket(const Buffer& packet, const std::string& inIface);
+
+    void handleIPv4Packet(const Buffer& packet, const std::string& inIface);
+    void handleArpPacket(const Buffer& packet, const std::string& inIface);
+    void handleIcmpPacket(const Buffer* packet, const std::string& inIface);
 
     /**
    * USE THIS METHOD TO SEND PACKETS
    *
    * Call this method to send packet \p packt from the router on interface \p outIface
    */
-    void
-    sendPacket(const Buffer& packet, const std::string& outIface);
+    void sendPacket(const Buffer& packet, const std::string& outIface);
 
     /**
    * Load routing table information from \p rtConfig file
@@ -102,17 +104,24 @@ class SimpleRouter {
     const Interface*
     findIfaceByName(const std::string& name) const;
 
-    /**
-   * send Arp Request.
-   */
-    void
-    sendArpRequest(uint32_t ip);
+    /******************************************************************************
+    * Util Functions
+    ******************************************************************************/
 
-    /**
-   * router should reply ICMP Host Unreachable to sender after MAX_SENT_TIME
-   */
-    void
-    replyIcmpHostUnreachable(Buffer& packet);
+    bool checkEther(const Buffer& packet);
+    bool checkArp(const Buffer& packet);
+    bool checkIPv4(const Buffer& packet);
+    bool checkICMP(const Buffer& packet);
+
+    void dispatchIPv4Packet(const Buffer& packet, const std::string& inIface);
+
+    void sendArpRequest(uint32_t ip);
+    void replyArpReply(const Buffer& packet, const std::string& inIface);
+
+    void replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code);
+    void replyIcmpHostUnreachable(Buffer& packet);
+    void replyIcmpPortUnreachable(Buffer& packet);
+    void replyIcmpTimeExceeded(Buffer& packet);
 
    private:
     ArpCache m_arp;

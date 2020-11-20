@@ -26,41 +26,40 @@
 namespace simple_router {
 
 void ArpCache::handleArpRequests() {
-    std::vector<std::list<std::shared_ptr<ArpRequest>>::iterator> invalidRequests;
-    for (auto iter = m_arpRequests.begin(); iter != m_arpRequests.end(); iter++) {
-        auto request = *iter;
+    std::vector<std::shared_ptr<ArpRequest>> invalidRequests;
+    for (auto request : m_arpRequests) {
+        time_point now = steady_clock::now();
+        if (now - request->timeSent <= seconds(1)) {
+            return;
+        }
 
         if (request->nTimesSent >= MAX_SENT_TIME) {
-            invalidRequests.push_back(iter);
-            // TODO: send ICMP host unreachable
+            invalidRequests.push_back(request);
             for (auto& packet : request->packets) {
-                m_router.replyIcmpHostUnreachable();
+                m_router.replyIcmpHostUnreachable(packet);
             }
         } else {
-            time_point now = steady_clock::now();
-            if (now - request->timeSent <= seconds(1)) {
-                return;
-            }
             m_router.sendArpRequest(request->ip);
             request->nTimesSent++;
             request->timeSent = now;
         }
     }
 
-    for (auto iter : invalidRequests) {
-        m_arpRequests.erase(iter);
+    for (auto request : invalidRequests) {
+        removeRequest(request);
     }
 }
 
 void ArpCache::removeInvalidEntries() {
-    std::vector<std::list<std::shared_ptr<ArpEntry>>::iterator> invalidEntries;
-    for (auto iter = m_cacheEntries.begin(); iter != m_cacheEntries.end(); ++iter) {
-        if (!(*iter)->isValid) {
-            invalidEntries.push_back(iter);
+    std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
+    for (auto entry : m_cacheEntries) {
+        if (!entry->isValid) {
+            invalidEntries.push_back(entry);
         }
     }
-    for (auto iter : invalidEntries) {
-        m_cacheEntries.erase(iter);
+
+    for (auto entry : invalidEntries) {
+        removeEntry(entry);
     }
 }
 
@@ -116,6 +115,11 @@ ArpCache::queueRequest(uint32_t ip, const Buffer& packet, const std::string& ifa
     // Add the packet to the list of packets for this request
     (*request)->packets.push_back({packet, iface});
     return *request;
+}
+
+void ArpCache::removeEntry(const std::shared_ptr<ArpEntry>& entry) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_cacheEntries.remove(entry);
 }
 
 void ArpCache::removeRequest(const std::shared_ptr<ArpRequest>& entry) {
