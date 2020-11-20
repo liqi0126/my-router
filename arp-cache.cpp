@@ -36,7 +36,7 @@ void ArpCache::handleArpRequests() {
         if (request->nTimesSent >= MAX_SENT_TIME) {
             invalidRequests.push_back(request);
             for (auto& packet : request->packets) {
-                m_router.replyIcmpHostUnreachable(packet);
+                m_router.replyIcmpHostUnreachable(packet.packet);
             }
         } else {
             m_router.sendArpRequest(request->ip);
@@ -54,7 +54,7 @@ void ArpCache::removeInvalidEntries() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
     std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
-                   [](void std::shared_ptr<ArpEntry>& entry) {
+                   [](const std::shared_ptr<ArpEntry>& entry) {
                        return !entry->isValid;
                    });
 }
@@ -118,7 +118,7 @@ void ArpCache::removeEntry(const uint32_t ip) {
 
     std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
                    [ip](const std::shared_ptr<ArpEntry>& entry) {
-                       return entry.ip == ip;
+                       return entry->ip == ip;
                    });
 }
 
