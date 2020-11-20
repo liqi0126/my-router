@@ -30,7 +30,7 @@ class TwoServerClientAndRouterTopology(Topo):
         server1 = self.addHost( 'server1' )
         server2 = self.addHost( 'server2' )
         router = self.addSwitch( 'sw0' )
-        client = self.addHost('client', inNamespace=False)
+        client = self.addHost('client')
         for h in server1, server2, client:
             self.addLink( h, router )
 
@@ -99,9 +99,9 @@ def main():
     clintf = client.defaultIntf()
     clintf.setIP('%s/8' % IP_SETTING['client'])
 
-    for host in server1, server2:
+    for host in server1, server2, client:
         set_default_route(host)
-    set_default_route_client(client)
+    # set_default_route_client(client)
     starthttp( server1 )
     starthttp( server2 )
     CLI( net )
