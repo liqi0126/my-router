@@ -110,7 +110,7 @@ class SimpleRouter {
     /******************************************************************************
     * Validity check
     ******************************************************************************/
-    bool checkEther(const Buffer& packet);
+    bool checkEther(const Buffer& packet, const std::string& IfaceName);
     bool checkArp(const Buffer& packet);
     bool checkIPv4(const Buffer& packet);
     bool checkICMP(const Buffer& packet);
@@ -130,9 +130,11 @@ class SimpleRouter {
     * ICMP
     ******************************************************************************/
     void replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code);
-    void replyIcmpHostUnreachable(Buffer& packet);
-    void replyIcmpPortUnreachable(Buffer& packet);
-    void replyIcmpTimeExceeded(Buffer& packet);
+    void replyIcmpEchoReply(const Buffer& packet);
+    void replyIcmpNetUnreachable(const Buffer& packet);
+    void replyIcmpHostUnreachable(const Buffer& packet);
+    void replyIcmpPortUnreachable(const Buffer& packet);
+    void replyIcmpTimeExceeded(const Buffer& packet);
 
    private:
     ArpCache m_arp;

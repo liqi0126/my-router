@@ -39,6 +39,7 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
         return;
     }
 
+    struct ethernet_hdr* hEther = (struct ethernet_hdr*)packet.data();
     if (ethertype(hEther) == ethertype_arp) {
         handleArpPacket(packet, inIface);
     } else if (ethertype(hEther) == ethertype_ip) {
@@ -86,7 +87,7 @@ void SimpleRouter::handleArpReply(const Buffer& packet) {
 }
 
 void SimpleRouter::handleIPv4Packet(const Buffer& packet, const std::string& inIface) {
-    if (!checkIPv4(packet, inIface)) {
+    if (!checkIPv4(packet)) {
         return;
     }
 
@@ -309,7 +310,7 @@ bool SimpleRouter::checkICMP(const Buffer& packet) {
 void SimpleRouter::sendArpRequest(uint32_t ip) {
     Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request.data());
-    struct arp_hdr* hArp = (struct arp_hdr*)((unit8_t*)pEther + sizeof(struct ethernet_hdr));
+    struct arp_hdr* hArp = (struct arp_hdr*)(hEther + sizeof(struct ethernet_hdr));
 
     // get Interface
     const auto routingEntry = m_routingTable.lookup(ip);
@@ -318,7 +319,7 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
     // build Ethernet header
     memcpy(hEther->ether_shost, outIface->addr.data(), ETHER_ADDR_LEN);
     memset(hEther->ether_dhost, 0xff, ETHER_ADDR_LEN);  // broadcast
-    hEther.ether_type = htons(ethertype_arp);
+    hEther->ether_type = htons(ethertype_arp);
 
     // build Arp header
     hArp->arp_hrd = htons(ARP_HRD_ETHER);
@@ -349,13 +350,13 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     // swap Ether dst and src
     memcpy(hReplyEther->ether_dhost, hEther->ether_shost, ETHER_ADDR_LEN);
     memcpy(hReplyEther->ether_shost, inface->addr.data(), ETHER_ADDR_LEN);
-    hReplyEther->arp_op = htons(ARP_OP_REPLY);
 
     // swap ARP dst and src
     memcpy(hReplyARP->arp_tha, hARP->arp_sha, ETHER_ADDR_LEN);
     memcpy(hReplyARP->arp_sha, inface->addr.data(), ETHER_ADDR_LEN);
     hReplyARP->arp_tip = hReplyARP->arp_sip;
     hReplyARP->arp_sip = hReplyARP->arp_tip;
+    hReplyARP->arp_op = htons(ARP_OP_REPLY);
 
     sendPacket(reply, inIface);
 }
@@ -403,7 +404,7 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
 }
 
 /******************************************************************************
-* ICMP 
+* ICMP
 ******************************************************************************/
 
 void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code) {
@@ -421,8 +422,8 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
 
     // build Ethernet header
     memcpy(hReplyEther->ether_shost, outIface->addr.data(), ETHER_ADDR_LEN);
-    memset(hReplyEther->ether_dhost, hEther->ether_shost, ETHER_ADDR_LEN);  // send back
-    hEther.ether_type = htons(ethertype_ip);
+    memcpy(hReplyEther->ether_dhost, hEther->ether_shost, ETHER_ADDR_LEN);  // send back
+    hReplyEther->ether_type = htons(ethertype_ip);
 
     // build IP
     hReplyIPv4->ip_tos = 0;  // TODO:
@@ -431,7 +432,7 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyIPv4->ip_off = 0;  // TODO:
     hReplyIPv4->ip_ttl = IP_TLL;
     hReplyIPv4->ip_p = ip_protocol_icmp;
-    hReplyIPv3->ip_sum = 0;
+    hReplyIPv4->ip_sum = 0;
     hReplyIPv4->ip_src = outIface->ip;
     hReplyIPv4->ip_dst = hIPv4->ip_src;
     hReplyIPv4->ip_sum = cksum(hReplyIPv4, sizeof(struct ip_hdr));

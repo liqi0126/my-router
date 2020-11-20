@@ -64,9 +64,8 @@ void ArpCache::removeInvalidEntries() {
 // IMPLEMENT THIS METHOD
 void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
     // FILL THIS IN
-
     handleArpRequests();
-    removeExpiredEntries();
+    removeInvalidEntries();
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////

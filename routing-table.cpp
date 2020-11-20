@@ -38,6 +38,8 @@ int numberOfSetBits(uint32_t i) {
 RoutingTableEntry
 RoutingTable::lookup(uint32_t ip) const {
     // FILL THIS IN
+    int match_len = -1;
+    RoutingTableEntry res;
     for (auto e : m_entries) {
         if ((e.dest & e.mask) == (ip & e.mask)) {
             int len = numberOfSetBits(e.mask);
