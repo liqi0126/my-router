@@ -51,16 +51,12 @@ void ArpCache::handleArpRequests() {
 }
 
 void ArpCache::removeInvalidEntries() {
-    std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
-    for (auto entry : m_cacheEntries) {
-        if (!entry->isValid) {
-            invalidEntries.push_back(entry);
-        }
-    }
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    for (auto entry : invalidEntries) {
-        removeEntry(entry);
-    }
+    std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
+                   [](void std::shared_ptr<ArpEntry>& entry) {
+                       return !entry->isValid;
+                   });
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -115,6 +111,15 @@ ArpCache::queueRequest(uint32_t ip, const Buffer& packet, const std::string& ifa
     // Add the packet to the list of packets for this request
     (*request)->packets.push_back({packet, iface});
     return *request;
+}
+
+void ArpCache::removeEntry(const uint32_t ip) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
+                   [ip](const std::shared_ptr<ArpEntry>& entry) {
+                       return entry.ip == ip;
+                   });
 }
 
 void ArpCache::removeEntry(const std::shared_ptr<ArpEntry>& entry) {

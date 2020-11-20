@@ -169,8 +169,8 @@ class ArpCache {
     void
     removeRequest(const std::shared_ptr<ArpRequest>& entry);
 
-    void
-    removeEntry(const std::shared_ptr<ArpEntry>& entry);
+    void removeEntry(const uint32_t ip);
+    void removeEntry(const std::shared_ptr<ArpEntry>& entry);
 
     /**
    * This method performs two functions:

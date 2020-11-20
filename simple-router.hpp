@@ -37,11 +37,14 @@ class SimpleRouter {
    * interface \p inIface are passed in as parameters. The packet is
    * complete with ethernet headers.
    */
+    /******************************************************************************
+    * Packet Handling
+    ******************************************************************************/
     void handlePacket(const Buffer& packet, const std::string& inIface);
-
     void handleIPv4Packet(const Buffer& packet, const std::string& inIface);
-    void handleArpPacket(const Buffer& packet, const std::string& inIface);
     void handleIcmpPacket(const Buffer* packet, const std::string& inIface);
+    void handleArpPacket(const Buffer& packet, const std::string& inIface);
+    void handleArpReply(const Buffer& packet);
 
     /**
    * USE THIS METHOD TO SEND PACKETS
@@ -105,19 +108,27 @@ class SimpleRouter {
     findIfaceByName(const std::string& name) const;
 
     /******************************************************************************
-    * Util Functions
+    * Validity check
     ******************************************************************************/
-
     bool checkEther(const Buffer& packet);
     bool checkArp(const Buffer& packet);
     bool checkIPv4(const Buffer& packet);
     bool checkICMP(const Buffer& packet);
 
-    void dispatchIPv4Packet(const Buffer& packet, const std::string& inIface);
-
+    /******************************************************************************
+    * ARP
+    ******************************************************************************/
     void sendArpRequest(uint32_t ip);
     void replyArpReply(const Buffer& packet, const std::string& inIface);
 
+    /******************************************************************************
+    * IPv4
+    ******************************************************************************/
+    void dispatchIPv4Packet(const Buffer& packet, const std::string& inIface);
+
+    /******************************************************************************
+    * ICMP
+    ******************************************************************************/
     void replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code);
     void replyIcmpHostUnreachable(Buffer& packet);
     void replyIcmpPortUnreachable(Buffer& packet);

@@ -34,6 +34,7 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
         return;
     }
 
+    // FILL THIS IN
     if (!checkEther(packet, inIface)) {
         return;
     }
@@ -42,10 +43,46 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
         handleArpPacket(packet, inIface);
     } else if (ethertype(hEther) == ethertype_ip) {
         handleIPv4Packet(packet, inIface);
-    } else {
+    }
+}
+
+void SimpleRouter::handleArpPacket(const Buffer& packet, const std::string& inIface) {
+    if (!checkArp(packet)) {
         return;
     }
-    // FILL THIS IN
+
+    struct arp_hdr* hARP = (struct arp_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
+
+    const Interface* iface = findIfaceByName(inIface);
+
+    // ignore ARP if the target ip is not router's IP
+    if (hARP->arp_tip == iface->ip) {
+        return;
+    }
+
+    if (ntohs(hARP->arp_op) == ARP_OP_REQUEST) {
+        replyArpReply(packet, inIface);
+    } else if (ntohs(hARP->arp_op) == ARP_OP_REPLY) {
+        handleArpReply(packet);
+    }
+}
+
+void SimpleRouter::handleArpReply(const Buffer& packet) {
+    struct arp_hdr* hARP = (struct arp_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
+
+    uint32_t IP = hARP->arp_sip;
+    Buffer MAC(hARP->arp_sha, hARP->arp_sha + ETHER_ADDR_LEN);
+    // clean old entries firstly.
+    m_arp.removeEntry(IP);
+
+    // handle queued requests
+    auto request = m_arp.insertArpEntry(MAC, IP);
+    if (request != nullptr) {
+        for (auto pendingPacket : request->packets) {
+            handlePacket(pendingPacket.packet, pendingPacket.iface);
+        }
+        m_arp.removeRequest(request);
+    }
 }
 
 void SimpleRouter::handleIPv4Packet(const Buffer& packet, const std::string& inIface) {
@@ -65,34 +102,12 @@ void SimpleRouter::handleIPv4Packet(const Buffer& packet, const std::string& inI
             if (hICMP->icmp_type == ICMP_TYPE_ECHO && hICMP->icmp_code == ICMP_CODE_ECHO) {
                 replyIcmpEchoReply(packet);
             }
-        } else {
-            // TODO: ICMP error response
+        } else if (hIPv4->ip_p == ip_protocol_tcp || hIPv4->ip_p == ip_protocol_udp) {
+            replyIcmpPortUnreachable(packet);
         }
-
     } else {  // datagrams to be forwarded
         dispatchIPv4Packet(packet, inIface);
     }
-}
-
-void SimpleRouter::handleArpPacket(const Buffer& packet, const std::string& inIface) {
-    if (!checkArp(packet)) {
-        return;
-    }
-
-    struct arp_hdr* hARP = (struct arp_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
-
-    const Interface* iface = findIfaceByName(inIface);
-
-    if (ntohs(hARP->arp_op) == ARP_OP_REQUEST) {
-    } else if (ntohs(hARP->arp_op) == ARP_OP_REPLY) {
-    }
-}
-
-void SimpleRouter::handleArpReply(const Buffer& packet) {
-    struct arp_hdr* hARP = (struct arp_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
-
-    uint32_t srcIP = hARP->arp_sip;
-    Buffer mac(hARP->arp_sha, hARP->arp_sha + ETHER_ADDR_LEN);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,7 +214,7 @@ void SimpleRouter::reset(const pox::Ifaces& ports) {
 }
 
 /******************************************************************************
-* Util Functions
+* Validity check
 ******************************************************************************/
 
 bool SimpleRouter::checkEther(const Buffer& packet, const std::string& IfaceName) {
@@ -287,43 +302,9 @@ bool SimpleRouter::checkICMP(const Buffer& packet) {
     return true;
 }
 
-void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& inIface) {
-    struct ip_hdr* hIPv4 = (struct ip_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
-
-    if (hIPv4->ip_ttl - 1 <= 0) {
-        // TODO: handle TTL time exceeded
-        return;
-    }
-
-    RoutingTableEntry routingEntry;
-    try {
-        routingEntry = m_routingTable.lookup(hIPv4->ip_dst);
-    } catch (const std::runtime_error& error) {
-        // TODO: reply ICMP Network unreachable
-        return;
-    }
-
-    auto arpEntry = m_arp.lookup(routingEntry.gw);
-    if (arpEntry == nullptr) {  // don't have a arp entry yet
-        // queue request
-        m_arp.queueRequest(hIPv4->ip_dst, packet, inIface);
-        return;
-    }
-
-    // make a copy
-    Buffer dispatch = packet;
-    struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch.data();
-    struct ip_hdr* hDispatchIPv4 = (struct ip_hdr*)(hDispatchEther + sizeof(struct ethernet_hdr));
-    const auto outIface = findIfaceByName(routingEntry.ifName);
-    // prepare ethernet header
-    memcpy(hDispatchEther->ether_shost, outIface->addr.data(), ETHER_ADDR_LEN);
-    memcpy(hDispatchEther->ether_dhost, arpEntry->mac.data(), ETHER_ADDR_LEN);
-    // prepare ip header
-    hDispatchIPv4->ip_ttl -= 1;
-    hDispatchIPv4->ip_sum = 0;
-    hDispatchIPv4->ip_sum = cksum(hDispatchIPv4, sizeof(struct ip_hdr));
-    sendPacket(dispatch, outIface->name);
-}
+/******************************************************************************
+* ARP
+******************************************************************************/
 
 void SimpleRouter::sendArpRequest(uint32_t ip) {
     Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
@@ -379,6 +360,52 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     sendPacket(reply, inIface);
 }
 
+/******************************************************************************
+* IPv4
+******************************************************************************/
+
+void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& inIface) {
+    struct ip_hdr* hIPv4 = (struct ip_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
+
+    if (hIPv4->ip_ttl - 1 <= 0) {
+        replyIcmpTimeExceeded(packet);
+        return;
+    }
+
+    RoutingTableEntry routingEntry;
+    try {
+        routingEntry = m_routingTable.lookup(hIPv4->ip_dst);
+    } catch (const std::runtime_error& error) {
+        replyIcmpNetUnreachable(packet);
+        return;
+    }
+
+    auto arpEntry = m_arp.lookup(routingEntry.gw);
+    if (arpEntry == nullptr) {  // don't have a arp entry yet
+        // queue request
+        m_arp.queueRequest(hIPv4->ip_dst, packet, inIface);
+        return;
+    }
+
+    // make a copy
+    Buffer dispatch = packet;
+    struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch.data();
+    struct ip_hdr* hDispatchIPv4 = (struct ip_hdr*)(hDispatchEther + sizeof(struct ethernet_hdr));
+    const auto outIface = findIfaceByName(routingEntry.ifName);
+    // prepare ethernet header
+    memcpy(hDispatchEther->ether_shost, outIface->addr.data(), ETHER_ADDR_LEN);
+    memcpy(hDispatchEther->ether_dhost, arpEntry->mac.data(), ETHER_ADDR_LEN);
+    // prepare ip header
+    hDispatchIPv4->ip_ttl -= 1;
+    hDispatchIPv4->ip_sum = 0;
+    hDispatchIPv4->ip_sum = cksum(hDispatchIPv4, sizeof(struct ip_hdr));
+    sendPacket(dispatch, outIface->name);
+}
+
+/******************************************************************************
+* ICMP 
+******************************************************************************/
+
 void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code) {
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(packet.data());
     struct ip_hdr* hIPv4 = (struct ip_hdr*)(hEther + sizeof(struct ethernet_hdr));
@@ -423,6 +450,10 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
 
 void SimpleRouter::replyIcmpEchoReply(const Buffer& packet) {
     replyICMP(packet, ICMP_TYPE_ECHO_REPLY, ICMP_CODE_ECHO_REPLY);
+}
+
+void SimpleRouter::replyIcmpNetUnreachable(const Buffer& packet) {
+    replyICMP(packet, ICMP_TYPE_UNREACHABLE, ICMP_CODE_NET_UNREACHABLE);
 }
 
 void SimpleRouter::replyIcmpHostUnreachable(const Buffer& packet) {
