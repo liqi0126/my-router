@@ -61,7 +61,7 @@ void SimpleRouter::handleArpPacket(const Buffer& packet, const std::string& inIf
     const Interface* iface = findIfaceByName(inIface);
 
     // ignore ARP if the target ip is not router's IP
-    if (hARP->arp_tip == iface->ip) {
+    if (hARP->arp_tip != iface->ip) {
         CERR("ARP IP is not the IP of interface, ignore it.");
         return;
     }
