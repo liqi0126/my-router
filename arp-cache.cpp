@@ -30,15 +30,18 @@ void ArpCache::handleArpRequests() {
     for (auto request : m_arpRequests) {
         time_point now = steady_clock::now();
         if (now - request->timeSent <= seconds(1)) {
+            CERR("Time interval < 1s, miss it");
             return;
         }
 
         if (request->nTimesSent >= MAX_SENT_TIME) {
+            CERR("ARP attempts exceeded");
             invalidRequests.push_back(request);
             for (auto& packet : request->packets) {
                 m_router.replyIcmpHostUnreachable(packet.packet);
             }
         } else {
+            CERR("resend ARP attempts");
             m_router.sendArpRequest(request->ip);
             request->nTimesSent++;
             request->timeSent = now;
@@ -53,6 +56,7 @@ void ArpCache::handleArpRequests() {
 void ArpCache::removeInvalidEntries() {
     std::lock_guard<std::mutex> lock(m_mutex);
 
+    CERR("remove expired Entries.");
     std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
                    [](const std::shared_ptr<ArpEntry>& entry) {
                        return !entry->isValid;
