@@ -467,9 +467,9 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyICMPT3->icmp_type = icmp_type;
     hReplyICMPT3->icmp_code = icmp_code;
     hReplyICMPT3->icmp_sum = 0;
-    // hReplyICMPT3->unused = 0;
-    // hReplyICMPT3->next_mtu = 0;
-    // memcpy(hReplyICMPT3->data, hIPv4, ICMP_DATA_SIZE);
+    hReplyICMPT3->unused = 0;
+    hReplyICMPT3->next_mtu = 0;
+    memcpy((uint8_t*)hReplyICMPT3->data, (uint8_t*)hIPv4, ICMP_DATA_SIZE);
     hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, packet.size() - sizeof(struct ethernet_hdr) - sizeof(struct ip_hdr));
 
     #ifdef DEBUG
