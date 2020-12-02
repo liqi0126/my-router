@@ -399,6 +399,7 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
         return;
     }
 
+    CERR("ping1");
     RoutingTableEntry routingEntry;
     try {
         routingEntry = m_routingTable.lookup(hIPv4->ip_dst);
@@ -408,6 +409,7 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
         return;
     }
 
+    CERR("ping2");
     auto arpEntry = m_arp.lookup(routingEntry.gw);
     if (arpEntry == nullptr) {  // don't have a arp entry yet
         // queue request
@@ -418,6 +420,7 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
     CERR("Find ARP Entry, dispatch it.");
 
     // make a copy
+    CERR("ping3");
     Buffer dispatch = packet;
     struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch.data();
     struct ip_hdr* hDispatchIPv4 = (struct ip_hdr*)((uint8_t*)hDispatchEther + sizeof(struct ethernet_hdr));
