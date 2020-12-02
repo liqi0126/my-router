@@ -181,6 +181,7 @@ SimpleRouter::findIfaceByIp(uint32_t ip) const {
     });
 
     if (iface == m_ifaces.end()) {
+        CERR("Interface not found");
         return nullptr;
     }
 
@@ -194,6 +195,7 @@ SimpleRouter::findIfaceByMac(const Buffer& mac) const {
     });
 
     if (iface == m_ifaces.end()) {
+        CERR("Interface not found");
         return nullptr;
     }
 
@@ -207,6 +209,7 @@ SimpleRouter::findIfaceByName(const std::string& name) const {
     });
 
     if (iface == m_ifaces.end()) {
+        CERR("Interface not found");
         return nullptr;
     }
 
@@ -363,7 +366,7 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     struct arp_hdr* hReplyARP = (struct arp_hdr*)(hReplyEther + sizeof(struct ethernet_hdr));
 
     // get Mac address
-    const Interface* inface = findIfaceByIp(hARP->arp_tip);
+    const Interface* inface = findIfaceByName(inIface);
 
     // swap Ether dst and src
     CERR("ping1");
