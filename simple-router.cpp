@@ -457,12 +457,12 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     // build IP
     // hReplyIPv4->ip_tos = 0;  
     // hReplyIPv4->ip_len = htons(sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
-    // hReplyIPv4->ip_id = 0;
     // hReplyIPv4->ip_off = 0;  
-    hReplyIPv4->ip_ttl = IP_TLL;
+    hReplyIPv4->ip_id = 0;
     hReplyIPv4->ip_p = ip_protocol_icmp;
+    hReplyIPv4->ip_ttl = IP_TLL;
     hReplyIPv4->ip_sum = 0;
-    hReplyIPv4->ip_src = outIface->ip;
+    hReplyIPv4->ip_src = hIPv4->ip_dst;
     hReplyIPv4->ip_dst = hIPv4->ip_src;
     hReplyIPv4->ip_sum = cksum(hReplyIPv4, sizeof(struct ip_hdr));
 
@@ -472,8 +472,8 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyICMPT3->icmp_sum = 0;
     // hReplyICMPT3->unused = 0;
     // hReplyICMPT3->next_mtu = 0;
-    memcpy(hReplyICMPT3->data, hIPv4, ICMP_DATA_SIZE);
-    hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, sizeof(struct icmp_t3_hdr));
+    // memcpy(hReplyICMPT3->data, hIPv4, ICMP_DATA_SIZE);
+    hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, packet.size() - sizeof(struct ethernet_hdr) - sizeof(struct ip_hdr));
 
     #ifdef DEBUG
     CERR("ICMP package:");
