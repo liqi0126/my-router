@@ -278,7 +278,7 @@ bool SimpleRouter::checkArp(const Buffer& packet) {
         return false;
     }
 
-    if (ntohs(hARP->arp_op) != 1 && ntohs(hARP->arp_op) != 2) {
+    if (ntohs(hARP->arp_op) != ARP_OP_REQUEST && ntohs(hARP->arp_op) != ARP_OP_REPLY) {
         return false;
     }
 
