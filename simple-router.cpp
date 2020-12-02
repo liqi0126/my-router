@@ -459,7 +459,7 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyIPv4->ip_p = ip_protocol_icmp;
     hReplyIPv4->ip_ttl = IP_TLL;
     hReplyIPv4->ip_sum = 0;
-    hReplyIPv4->ip_src = hIPv4->ip_dst;
+    hReplyIPv4->ip_src = outIface->name;
     hReplyIPv4->ip_dst = hIPv4->ip_src;
     hReplyIPv4->ip_sum = cksum(hReplyIPv4, sizeof(struct ip_hdr));
 
