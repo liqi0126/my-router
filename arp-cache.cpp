@@ -54,7 +54,6 @@ void ArpCache::handleArpRequests() {
 }
 
 void ArpCache::removeInvalidEntries() {
-    CERR("remove expired Entries.");
     std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
     for (auto entry : m_cacheEntries) {
         if (!entry->isValid) {
@@ -75,6 +74,33 @@ void ArpCache::removeInvalidEntries() {
 // IMPLEMENT THIS METHOD
 void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
     // FILL THIS IN
+    #ifdef DEBUG
+    std::cerr << "\nMAC            IP         AGE                       VALID\n"
+       << "-----------------------------------------------------------\n";
+
+    auto now = steady_clock::now();
+    for (const auto& entry : cache.m_cacheEntries) {
+        std::cerr << macToString(entry->mac) << "   "
+           << ipToString(entry->ip) << "   "
+           << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
+           << entry->isValid
+           << "\n";
+    }
+    std::cerr << std::endl;
+    std::cerr << "\nMAC            IP         AGE                       VALID\n"
+       << "-----------------------------------------------------------\n";
+    #endif
+
+    auto now = steady_clock::now();
+    for (const auto& entry : cache.m_cacheEntries) {
+        os << macToString(entry->mac) << "   "
+           << ipToString(entry->ip) << "   "
+           << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
+           << entry->isValid
+           << "\n";
+    }
+    os << std::endl;
+
     handleArpRequests();
     removeInvalidEntries();
 }
