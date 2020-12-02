@@ -107,7 +107,7 @@ void SimpleRouter::handleIPv4Packet(const Buffer& packet, const std::string& inI
     struct ip_hdr* hIPv4 = (struct ip_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
 
     if (findIfaceByIp(hIPv4->ip_dst) != nullptr) {  // destined to the router
-        CERR("Handling queued package.");
+        CERR("IPv4 package target to router.");
         if (hIPv4->ip_p == ip_protocol_icmp) {
             if (!checkICMP(packet)) {
                 CERR("ICMP header check failed...");
@@ -473,6 +473,11 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyICMPT3->next_mtu = 0;
     memcpy(hReplyICMPT3->data, hIPv4, ICMP_DATA_SIZE);
     hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, sizeof(struct icmp_t3_hdr));
+
+    #ifdef DEBUG
+    CERR("ICMP package:");
+    print_hdrs(reply);
+    #endif
 
     sendPacket(reply, outIface->name);
 }
