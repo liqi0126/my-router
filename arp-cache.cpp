@@ -79,7 +79,7 @@ void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
        << "-----------------------------------------------------------\n";
 
     auto now = steady_clock::now();
-    for (const auto& entry : cache.m_cacheEntries) {
+    for (const auto& entry : m_cacheEntries) {
         std::cerr << macToString(entry->mac) << "   "
            << ipToString(entry->ip) << "   "
            << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
@@ -90,16 +90,6 @@ void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
     std::cerr << "\nMAC            IP         AGE                       VALID\n"
        << "-----------------------------------------------------------\n";
     #endif
-
-    auto now = steady_clock::now();
-    for (const auto& entry : cache.m_cacheEntries) {
-        os << macToString(entry->mac) << "   "
-           << ipToString(entry->ip) << "   "
-           << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
-           << entry->isValid
-           << "\n";
-    }
-    os << std::endl;
 
     handleArpRequests();
     removeInvalidEntries();
