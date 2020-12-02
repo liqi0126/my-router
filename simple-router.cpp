@@ -456,7 +456,7 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
 
     // build IP
     // hReplyIPv4->ip_tos = 0;  
-    hReplyIPv4->ip_len = htons(sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
+    // hReplyIPv4->ip_len = htons(sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
     // hReplyIPv4->ip_id = 0;
     // hReplyIPv4->ip_off = 0;  
     hReplyIPv4->ip_ttl = IP_TLL;
