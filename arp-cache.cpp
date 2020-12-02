@@ -48,7 +48,7 @@ void ArpCache::handleArpRequests() {
     }
 
     for (auto request : invalidRequests) {
-        removeRequest(request);
+        m_arpRequests.remove(request);
     }
 }
 
