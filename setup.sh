@@ -13,6 +13,6 @@ sudo easy_install pip
 # POX
 sudo rm -Rf /opt/pox
 sudo mkdir -p /opt/pox
-sudo git clone -b eel https://github.com/noxrepo/pox /opt/pox
+sudo git clone -b eel https://github.com.cnpmjs.org/noxrepo/pox /opt/pox
 
 pip install ucla-cs118

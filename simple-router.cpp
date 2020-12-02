@@ -34,9 +34,11 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
         return;
     }
 
+    print_hdrs(packet);
+
     // FILL THIS IN
     if (!checkEther(packet, inIface)) {
-        CERR('Ether Header check failed...');
+        CERR("Ether Header check failed...");
         return;
     }
 
@@ -364,17 +366,24 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     const Interface* inface = findIfaceByIp(hARP->arp_tip);
 
     // swap Ether dst and src
+    CERR("ping1");
+    print_addr_eth(inface->addr.data());
+    print_addr_eth(hEther->ether_shost);
+
     memcpy(hReplyEther->ether_dhost, hEther->ether_shost, ETHER_ADDR_LEN);
     memcpy(hReplyEther->ether_shost, inface->addr.data(), ETHER_ADDR_LEN);
 
     // swap ARP dst and src
+    CERR("ping2");
     memcpy(hReplyARP->arp_tha, hARP->arp_sha, ETHER_ADDR_LEN);
     memcpy(hReplyARP->arp_sha, inface->addr.data(), ETHER_ADDR_LEN);
     hReplyARP->arp_tip = hReplyARP->arp_sip;
     hReplyARP->arp_sip = hReplyARP->arp_tip;
     hReplyARP->arp_op = htons(ARP_OP_REPLY);
+    CERR("ping3");
 
     sendPacket(reply, inIface);
+    CERR("pong");
 }
 
 /******************************************************************************
