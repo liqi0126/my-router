@@ -74,22 +74,19 @@ void ArpCache::removeInvalidEntries() {
 // IMPLEMENT THIS METHOD
 void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
     // FILL THIS IN
-    #ifdef DEBUG
-    std::cerr << "\nMAC            IP         AGE                       VALID\n"
-       << "-----------------------------------------------------------\n";
+    // #ifdef DEBUG
+    // std::cerr << "\nMAC            IP         AGE                       VALID\n"
+    //    << "-----------------------------------------------------------\n";
 
-    auto now = steady_clock::now();
-    for (const auto& entry : m_cacheEntries) {
-        std::cerr << macToString(entry->mac) << "   "
-           << ipToString(entry->ip) << "   "
-           << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
-           << entry->isValid
-           << "\n";
-    }
-    std::cerr << std::endl;
-    std::cerr << "\nMAC            IP         AGE                       VALID\n"
-       << "-----------------------------------------------------------\n";
-    #endif
+    // auto now = steady_clock::now();
+    // for (const auto& entry : m_cacheEntries) {
+    //     std::cerr << macToString(entry->mac) << "   "
+    //        << ipToString(entry->ip) << "   "
+    //        << std::chrono::duration_cast<seconds>((now - entry->timeAdded)).count() << " seconds   "
+    //        << entry->isValid
+    //        << "\n";
+    // }
+    // #endif
 
     handleArpRequests();
     removeInvalidEntries();
