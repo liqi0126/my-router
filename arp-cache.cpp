@@ -55,10 +55,19 @@ void ArpCache::handleArpRequests() {
 
 void ArpCache::removeInvalidEntries() {
     CERR("remove expired Entries.");
-    std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
-                   [](const std::shared_ptr<ArpEntry>& entry) {
-                       return !entry->isValid;
-                   });
+    std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
+    for (auto entry : m_cacheEntries) {
+        if (!entry->isValid) {
+            invalidEntries.push_back(entry);
+        }
+    }
+    for (auto entry : invalidEntries) {
+        m_cacheEntries.remove(entry);
+    }
+    // std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
+    //                [](const std::shared_ptr<ArpEntry>& entry) {
+    //                    return !entry->isValid;
+    //                });
 }
 
 //////////////////////////////////////////////////////////////////////////
