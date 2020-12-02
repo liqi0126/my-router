@@ -470,9 +470,9 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyICMPT3->icmp_sum = 0;
     // hReplyICMPT3->unused = 0;
     // hReplyICMPT3->next_mtu = 0;
-    // if (icmp_type == ICMP_TYPE_TIME_EXCEEDED && icmp_code == ICMP_CODE_TTL_EXCEEDED) {
+    if (icmp_type == ICMP_TYPE_TIME_EXCEEDED || icmp_type == ICMP_TYPE_UNREACHABLE) {
         memcpy((uint8_t*)hReplyICMPT3->data, (uint8_t*)hIPv4, ICMP_DATA_SIZE);
-    // }
+    }
     hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, packet.size() - sizeof(struct ethernet_hdr) - sizeof(struct ip_hdr));
 
     #ifdef DEBUG
