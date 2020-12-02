@@ -379,10 +379,6 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     hReplyARP->arp_sip = hARP->arp_tip;
     hReplyARP->arp_op = htons(ARP_OP_REPLY);
 
-    #ifdef DEBUG
-    CERR("reply packet");
-    print_hdrs(reply);
-    #endif
     sendPacket(reply, inface->name);
 }
 
