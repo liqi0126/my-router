@@ -26,6 +26,7 @@
 namespace simple_router {
 
 void ArpCache::handleArpRequests() {
+    std::vector<std::shared_ptr<ArpRequest>> invalidRequests;
     for (auto request : m_arpRequests) {
         time_point now = steady_clock::now();
         if (now - request->timeSent <= seconds(1)) {
