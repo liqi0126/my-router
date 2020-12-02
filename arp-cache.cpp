@@ -74,6 +74,7 @@ void ArpCache::removeInvalidEntries() {
 // IMPLEMENT THIS METHOD
 void ArpCache::periodicCheckArpRequestsAndCacheEntries() {
     // FILL THIS IN
+
     // #ifdef DEBUG
     // std::cerr << "\nMAC            IP         AGE                       VALID\n"
     //    << "-----------------------------------------------------------\n";

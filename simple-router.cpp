@@ -34,7 +34,9 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
         return;
     }
 
+    #ifdef DEBUG
     print_hdrs(packet);
+    #endif
 
     // FILL THIS IN
     if (!checkEther(packet, inIface)) {
