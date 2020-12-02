@@ -26,7 +26,6 @@
 namespace simple_router {
 
 void ArpCache::handleArpRequests() {
-    std::vector<std::shared_ptr<ArpRequest>> invalidRequests;
     for (auto request : m_arpRequests) {
         time_point now = steady_clock::now();
         if (now - request->timeSent <= seconds(1)) {
@@ -54,8 +53,6 @@ void ArpCache::handleArpRequests() {
 }
 
 void ArpCache::removeInvalidEntries() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     CERR("remove expired Entries.");
     std::remove_if(m_cacheEntries.begin(), m_cacheEntries.end(),
                    [](const std::shared_ptr<ArpEntry>& entry) {
