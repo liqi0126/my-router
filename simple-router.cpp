@@ -439,7 +439,8 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(packet.data());
     struct ip_hdr* hIPv4 = (struct ip_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
-    Buffer reply(sizeof(struct ethernet_hdr) + sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
+    // Buffer reply(sizeof(struct ethernet_hdr) + sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
+    Buffer reply(packet);
     struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
     struct ip_hdr* hReplyIPv4 = (struct ip_hdr*)((uint8_t*)hReplyEther + sizeof(struct ethernet_hdr));
     struct icmp_t3_hdr* hReplyICMPT3 = (struct icmp_t3_hdr*)((uint8_t*)hReplyIPv4 + sizeof(struct ip_hdr));
@@ -454,10 +455,10 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyEther->ether_type = htons(ethertype_ip);
 
     // build IP
-    hReplyIPv4->ip_tos = 0;  // TODO:
+    // hReplyIPv4->ip_tos = 0;  
     hReplyIPv4->ip_len = htons(sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
-    hReplyIPv4->ip_id = 0;
-    hReplyIPv4->ip_off = 0;  // TODO:
+    // hReplyIPv4->ip_id = 0;
+    // hReplyIPv4->ip_off = 0;  
     hReplyIPv4->ip_ttl = IP_TLL;
     hReplyIPv4->ip_p = ip_protocol_icmp;
     hReplyIPv4->ip_sum = 0;
@@ -469,8 +470,8 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     hReplyICMPT3->icmp_type = icmp_type;
     hReplyICMPT3->icmp_code = icmp_code;
     hReplyICMPT3->icmp_sum = 0;
-    hReplyICMPT3->unused = 0;
-    hReplyICMPT3->next_mtu = 0;
+    // hReplyICMPT3->unused = 0;
+    // hReplyICMPT3->next_mtu = 0;
     memcpy(hReplyICMPT3->data, hIPv4, ICMP_DATA_SIZE);
     hReplyICMPT3->icmp_sum = cksum(hReplyICMPT3, sizeof(struct icmp_t3_hdr));
 
