@@ -375,8 +375,8 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     // swap ARP dst and src
     memcpy(hReplyARP->arp_tha, hARP->arp_sha, ETHER_ADDR_LEN);
     memcpy(hReplyARP->arp_sha, inface->addr.data(), ETHER_ADDR_LEN);
-    hReplyARP->arp_tip = hReplyARP->arp_sip;
-    hReplyARP->arp_sip = hReplyARP->arp_tip;
+    hReplyARP->arp_tip = hARP->arp_sip;
+    hReplyARP->arp_sip = hARP->arp_tip;
     hReplyARP->arp_op = htons(ARP_OP_REPLY);
 
     #ifdef DEBUG
