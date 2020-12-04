@@ -30,7 +30,9 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
 
     const Interface* iface = findIfaceByName(inIface);
     if (iface == nullptr) {
+        #ifdef DEBUG
         std::cerr << "Received packet, but interface is unknown, ignoring" << std::endl;
+        #endif
         return;
     }
 
@@ -257,6 +259,7 @@ bool SimpleRouter::checkEther(const Buffer& packet, const std::string& IfaceName
     if (memcmp(hEther->ether_dhost, Iface->addr.data(), ETHER_ADDR_LEN) == 0) {
         return true;
     }
+
     // broadcast
     if (is_broadcast(hEther->ether_dhost)) {
         return true;
