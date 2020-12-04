@@ -103,7 +103,7 @@ void SimpleRouter::handleArpReply(const Buffer& packet) {
     Buffer MAC(hARP->arp_sha, hARP->arp_sha + ETHER_ADDR_LEN);
     // clean old entries firstly.
     // CERR("Cleaning old Entry...");
-    // m_arp.removeEntry(IP);
+    m_arp.removeEntry(IP);
 
     // handle queued requests
     CERR("Add new Entry.");
@@ -373,10 +373,8 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
     std::cerr << "sendArpRequest" << std::endl;
     #endif
 
-    // Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
-    // struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request.data());
-    Buffer * request = new Buffer (sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
-    struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request->data());
+    Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
+    struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request.data());
     struct arp_hdr* hArp = (struct arp_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
     // get Interface
@@ -399,9 +397,7 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
     memset(hArp->arp_tha, 0xff, ETHER_ADDR_LEN);
     hArp->arp_tip = ip;
 
-    // sendPacket(request, outIface->name);
-    sendPacket(*request, outIface->name);
-    delete request;
+    sendPacket(request, outIface->name);
 }
 
 void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIface) {
