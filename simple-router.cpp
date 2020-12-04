@@ -103,7 +103,7 @@ void SimpleRouter::handleArpReply(const Buffer& packet) {
     Buffer MAC(hARP->arp_sha, hARP->arp_sha + ETHER_ADDR_LEN);
     // clean old entries firstly.
     // CERR("Cleaning old Entry...");
-    m_arp.removeEntry(IP);
+    // m_arp.removeEntry(IP);
 
     // handle queued requests
     CERR("Add new Entry.");
@@ -375,6 +375,8 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
 
     Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request.data());
+    // Buffer * request = new Buffer (sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
+    // struct ethernet_hdr* hEther = (struct ethernet_hdr*)(request->data());
     struct arp_hdr* hArp = (struct arp_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
     // get Interface
@@ -398,6 +400,8 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
     hArp->arp_tip = ip;
 
     sendPacket(request, outIface->name);
+    // sendPacket(*request, outIface->name);
+    // delete request;
 }
 
 void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIface) {
@@ -409,10 +413,10 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     struct arp_hdr* hARP = (struct arp_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
     // copy the old packet
-    // Buffer reply(packet);
-    // struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
-    Buffer * reply = new Buffer(packet);
-    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply->data();
+    Buffer reply(packet);
+    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
+    // Buffer * reply = new Buffer(packet);
+    // struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply->data();
     struct arp_hdr* hReplyARP = (struct arp_hdr*)((uint8_t*)hReplyEther + sizeof(struct ethernet_hdr));
 
     // get Mac address
@@ -429,8 +433,9 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
     hReplyARP->arp_sip = hARP->arp_tip;
     hReplyARP->arp_op = htons(ARP_OP_REPLY);
 
-    sendPacket(*reply, inface->name);
-    delete reply;
+    sendPacket(reply, inface->name);
+    // sendPacket(*reply, inface->name);
+    // delete reply;
 }
 
 /******************************************************************************
@@ -469,10 +474,10 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
     CERR("Find ARP Entry, dispatch it.");
 
     // make a copy
-    // Buffer dispatch = packet;
-    // struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch.data();
-    Buffer * dispatch = new Buffer(packet);
-    struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch->data();
+    Buffer dispatch = packet;
+    struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch.data();
+    // Buffer * dispatch = new Buffer(packet);
+    // struct ethernet_hdr* hDispatchEther = (struct ethernet_hdr*)dispatch->data();
     struct ip_hdr* hDispatchIPv4 = (struct ip_hdr*)((uint8_t*)hDispatchEther + sizeof(struct ethernet_hdr));
     const auto outIface = findIfaceByName(routingEntry.ifName);
     // prepare ethernet header
@@ -482,8 +487,9 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
     hDispatchIPv4->ip_ttl -= 1;
     hDispatchIPv4->ip_sum = 0;
     hDispatchIPv4->ip_sum = cksum(hDispatchIPv4, sizeof(struct ip_hdr));
-    sendPacket(*dispatch, outIface->name);
-    delete dispatch;
+    sendPacket(dispatch, outIface->name);
+    // sendPacket(*dispatch, outIface->name);
+    // delete dispatch;
 }
 
 /******************************************************************************
@@ -499,10 +505,10 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     struct ip_hdr* hIPv4 = (struct ip_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
     // Buffer reply(sizeof(struct ethernet_hdr) + sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
-    // Buffer reply(packet);
-    // struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
-    Buffer * reply = new Buffer(packet);
-    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply->data();
+    Buffer reply(packet);
+    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
+    // Buffer * reply = new Buffer(packet);
+    // struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply->data();
     struct ip_hdr* hReplyIPv4 = (struct ip_hdr*)((uint8_t*)hReplyEther + sizeof(struct ethernet_hdr));
     struct icmp_t3_hdr* hReplyICMPT3 = (struct icmp_t3_hdr*)((uint8_t*)hReplyIPv4 + sizeof(struct ip_hdr));
 
@@ -544,8 +550,9 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     print_hdrs(reply);
     #endif
 
-    sendPacket(*reply, outIface->name);
-    delete reply;
+    sendPacket(reply, outIface->name);
+    // sendPacket(*reply, outIface->name);
+    // delete reply;
 }
 
 void SimpleRouter::replyIcmpEchoReply(const Buffer& packet) {
