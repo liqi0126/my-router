@@ -26,8 +26,8 @@
 namespace simple_router {
 
 void ArpCache::handleArpRequests() {
-    #ifdef FUNNAME
-    CERR("handleArpRequests");
+    #ifdef FUNCNAME
+    std::cerr << "handleArpRequests" << std::endl;
     #endif
 
     std::vector<std::shared_ptr<ArpRequest>> invalidRequests;
@@ -58,8 +58,8 @@ void ArpCache::handleArpRequests() {
 }
 
 void ArpCache::removeInvalidEntries() {
-    #ifdef FUNNAME
-    CERR("removeInvalidEntries");
+    #ifdef FUNCNAME
+    std::cerr << "removeInvalidEntries" << std::endl;
     #endif
     
     std::vector<std::shared_ptr<ArpEntry>> invalidEntries;

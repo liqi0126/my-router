@@ -28,7 +28,7 @@ namespace simple_router {
 
 void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface) {
     #ifdef FUNCNAME
-    CERR("handlePacket");
+    std::cerr << "handlePacket" << std::endl;
     #endif
 
     std::cerr << "Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
@@ -63,7 +63,7 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
 
 void SimpleRouter::handleArpPacket(const Buffer& packet, const std::string& inIface) {
     #ifdef FUNCNAME
-    CERR("handleArpPacket");
+    std::cerr << "handleArpPacket" << std::endl;
     #endif
 
     if (!checkArp(packet)) {
@@ -91,8 +91,8 @@ void SimpleRouter::handleArpPacket(const Buffer& packet, const std::string& inIf
 }
 
 void SimpleRouter::handleArpReply(const Buffer& packet) {
-    #ifdef FUNNAME
-    CERR("handleArpReply");
+    #ifdef FUNCNAME
+    std::cerr << "handleArpReply" << std::endl;
     #endif
 
     struct arp_hdr* hARP = (struct arp_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
@@ -116,8 +116,8 @@ void SimpleRouter::handleArpReply(const Buffer& packet) {
 }
 
 void SimpleRouter::handleIPv4Packet(const Buffer& packet, const std::string& inIface) {
-    #ifdef FUNNAME
-    CERR("handleIPv4Packet");
+    #ifdef FUNCNAME
+    std::cerr << "handleIPv4Packet" << std::endl;
     #endif
 
     if (!checkIPv4(packet)) {
@@ -261,8 +261,8 @@ void SimpleRouter::reset(const pox::Ifaces& ports) {
 ******************************************************************************/
 
 bool SimpleRouter::checkEther(const Buffer& packet, const std::string& IfaceName) {
-    #ifdef FUNNAME
-    CERR("checkEther");
+    #ifdef FUNCNAME
+    std::cerr << "checkEther" << std::endl;
     #endif
 
     if (packet.size() < sizeof(struct ethernet_hdr)) {
@@ -290,8 +290,8 @@ bool SimpleRouter::checkEther(const Buffer& packet, const std::string& IfaceName
 }
 
 bool SimpleRouter::checkArp(const Buffer& packet) {
-    #ifdef FUNNAME
-    CERR("checkArp");
+    #ifdef FUNCNAME
+    std::cerr << "checkArp" << std::endl;
     #endif
 
     if (packet.size() != sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr)) {
@@ -324,8 +324,8 @@ bool SimpleRouter::checkArp(const Buffer& packet) {
 }
 
 bool SimpleRouter::checkIPv4(const Buffer& packet) {
-    #ifdef FUNNAME
-    CERR("checkIPv4");
+    #ifdef FUNCNAME
+    std::cerr << "checkIPv4" << std::endl;
     #endif
 
     if (packet.size() < sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr)) {
@@ -346,8 +346,8 @@ bool SimpleRouter::checkIPv4(const Buffer& packet) {
 }
 
 bool SimpleRouter::checkICMP(const Buffer& packet) {
-    #ifdef FUNNAME
-    CERR("checkICMP");
+    #ifdef FUNCNAME
+    std::cerr << "checkICMP" << std::endl;
     #endif
 
     if (packet.size() < sizeof(struct ethernet_hdr) + sizeof(struct ip_hdr) + sizeof(struct icmp_hdr)) {
@@ -367,8 +367,8 @@ bool SimpleRouter::checkICMP(const Buffer& packet) {
 ******************************************************************************/
 
 void SimpleRouter::sendArpRequest(uint32_t ip) {
-    #ifdef FUNNAME
-    CERR("sendArpRequest");
+    #ifdef FUNCNAME
+    std::cerr << "sendArpRequest" << std::endl;
     #endif
 
     Buffer request(sizeof(struct ethernet_hdr) + sizeof(struct arp_hdr));
@@ -399,8 +399,8 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
 }
 
 void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIface) {
-    #ifdef FUNNAME
-    CERR("replyArpReply");
+    #ifdef FUNCNAME
+    std::cerr << "replyArpReply" << std::endl;
     #endif
 
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)packet.data();
@@ -433,8 +433,8 @@ void SimpleRouter::replyArpReply(const Buffer& packet, const std::string& inIfac
 ******************************************************************************/
 
 void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& inIface) {
-    #ifdef FUNNAME
-    CERR("dispatchIPv4Packet");
+    #ifdef FUNCNAME
+    std::cerr << "dispatchIPv4Packet" << std::endl;
     #endif
 
     struct ip_hdr* hIPv4 = (struct ip_hdr*)(packet.data() + sizeof(struct ethernet_hdr));
@@ -483,8 +483,8 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
 ******************************************************************************/
 
 void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code) {
-    #ifdef FUNNAME
-    CERR("replyICMP");
+    #ifdef FUNCNAME
+    std::cerr << "replyICMP" << std::endl;
     #endif
 
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(packet.data());

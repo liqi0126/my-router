@@ -37,8 +37,8 @@ int numberOfSetBits(uint32_t i) {
 // IMPLEMENT THIS METHOD
 RoutingTableEntry
 RoutingTable::lookup(uint32_t ip) const {
-    #ifdef FUNNAME
-    CERR("lookup");
+    #ifdef FUNCNAME
+    std::cerr << "lookup" << std::endl;
     #endif
 
     // FILL THIS IN
