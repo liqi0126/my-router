@@ -26,11 +26,15 @@ namespace simple_router {
 //////////////////////////////////////////////////////////////////////////
 // IMPLEMENT THIS METHOD
 void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface) {
+    #ifdef DEBUG
     std::cerr << "Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
+    #endif
 
     const Interface* iface = findIfaceByName(inIface);
     if (iface == nullptr) {
+        #ifdef DEBUG
         std::cerr << "Received packet, but interface is unknown, ignoring" << std::endl;
+        #endif
         return;
     }
 
