@@ -102,8 +102,8 @@ void SimpleRouter::handleArpReply(const Buffer& packet) {
     uint32_t IP = hARP->arp_sip;
     Buffer MAC(hARP->arp_sha, hARP->arp_sha + ETHER_ADDR_LEN);
     // clean old entries firstly.
-    CERR("Cleaning old Entry...");
-    m_arp.removeEntry(IP);
+    // CERR("Cleaning old Entry...");
+    // m_arp.removeEntry(IP);
 
     // handle queued requests
     CERR("Add new Entry.");
