@@ -37,6 +37,10 @@ int numberOfSetBits(uint32_t i) {
 // IMPLEMENT THIS METHOD
 RoutingTableEntry
 RoutingTable::lookup(uint32_t ip) const {
+    #ifdef FUNNAME
+    CERR("lookup");
+    #endif
+
     // FILL THIS IN
     int match_len = -1;
     RoutingTableEntry res;
