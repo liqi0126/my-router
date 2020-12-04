@@ -74,8 +74,8 @@
 #define ICMP_CODE_HOST_UNREACHABLE 1
 #define ICMP_CODE_PORT_UNREACHABLE 3
 
-#define FUNCNAME
-#define DEBUG
+#define FUNNAME
+// #define DEBUG
 #ifdef DEBUG
 #define CERR(msg) \
     { std::cerr << msg << std::endl; }

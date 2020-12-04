@@ -31,7 +31,9 @@ void SimpleRouter::handlePacket(const Buffer& packet, const std::string& inIface
     std::cerr << "handlePacket" << std::endl;
     #endif
 
+    #ifdef DEBUG
     std::cerr << "Got packet of size " << packet.size() << " on interface " << inIface << std::endl;
+    #endif
 
     const Interface* iface = findIfaceByName(inIface);
     if (iface == nullptr) {
