@@ -26,6 +26,10 @@
 namespace simple_router {
 
 void ArpCache::handleArpRequests() {
+    #ifdef FUNNAME
+    CERR("handleArpRequests");
+    #endif
+
     std::vector<std::shared_ptr<ArpRequest>> invalidRequests;
     for (auto request : m_arpRequests) {
         time_point now = steady_clock::now();
@@ -54,6 +58,10 @@ void ArpCache::handleArpRequests() {
 }
 
 void ArpCache::removeInvalidEntries() {
+    #ifdef FUNNAME
+    CERR("removeInvalidEntries");
+    #endif
+    
     std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
     for (auto entry : m_cacheEntries) {
         if (!entry->isValid) {
