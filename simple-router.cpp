@@ -399,6 +399,8 @@ void SimpleRouter::sendArpRequest(uint32_t ip) {
     memset(hArp->arp_tha, 0xff, ETHER_ADDR_LEN);
     hArp->arp_tip = ip;
 
+    // std::cerr << "send ARP request" << std::endl;
+    // print_hdrs(request);
     sendPacket(request, outIface->name);
     // sendPacket(*request, outIface->name);
     // delete request;
@@ -468,6 +470,8 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
     if (arpEntry == nullptr) {  // don't have a arp entry yet
         // queue request
         CERR("Don't have a ARP Entry yet, queue it.");
+        std::cerr << "Don't have a ARP Entry yet, queue it." << std::endl;
+        print_hdrs(packet);
         m_arp.queueRequest(hIPv4->ip_dst, packet, inIface);
         return;
     }

@@ -46,6 +46,7 @@ void ArpCache::handleArpRequests() {
             }
         } else {
             CERR("resend ARP attempts");
+            // std::cerr << "target IP: " << ipToString(request->ip) << std::endl;
             m_router.sendArpRequest(request->ip);
             request->nTimesSent++;
             request->timeSent = now;
@@ -61,7 +62,7 @@ void ArpCache::removeInvalidEntries() {
     #ifdef FUNCNAME
     std::cerr << "removeInvalidEntries" << std::endl;
     #endif
-    
+
     std::vector<std::shared_ptr<ArpEntry>> invalidEntries;
     for (auto entry : m_cacheEntries) {
         if (!entry->isValid) {
