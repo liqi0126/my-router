@@ -505,10 +505,10 @@ void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t ic
     struct ip_hdr* hIPv4 = (struct ip_hdr*)((uint8_t*)hEther + sizeof(struct ethernet_hdr));
 
     // Buffer reply(sizeof(struct ethernet_hdr) + sizeof(struct ip_hdr) + sizeof(struct icmp_t3_hdr));
-    Buffer reply(packet);
-    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
     // Buffer * reply = new Buffer(packet);
     // struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply->data();
+    Buffer reply(packet);
+    struct ethernet_hdr* hReplyEther = (struct ethernet_hdr*)reply.data();
     struct ip_hdr* hReplyIPv4 = (struct ip_hdr*)((uint8_t*)hReplyEther + sizeof(struct ethernet_hdr));
     struct icmp_t3_hdr* hReplyICMPT3 = (struct icmp_t3_hdr*)((uint8_t*)hReplyIPv4 + sizeof(struct ip_hdr));
 
