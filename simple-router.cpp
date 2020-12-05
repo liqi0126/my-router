@@ -502,7 +502,7 @@ void SimpleRouter::dispatchIPv4Packet(const Buffer& packet, const std::string& i
 
 void SimpleRouter::replyICMP(const Buffer& packet, uint8_t icmp_type, uint8_t icmp_code) {
     #ifdef FUNCNAME
-    std::cerr << "replyICMP" << std::endl;
+        std::cerr << "replyICMP" << std::endl;
     #endif
 
     struct ethernet_hdr* hEther = (struct ethernet_hdr*)(packet.data());
